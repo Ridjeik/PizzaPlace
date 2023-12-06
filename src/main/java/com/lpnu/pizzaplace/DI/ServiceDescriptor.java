@@ -14,7 +14,7 @@ public class ServiceDescriptor {
     public ServiceDescriptor(Object implementation) {
         this.implementationType = implementation.getClass();
         this.implementation = implementation;
-        this.implementationFactory = () -> this.implementation;
+        this.implementationFactory = (container) -> this.implementation;
         this.lifetime = ServiceLifetime.Singleton;
         this.serviceType = implementation.getClass();
     }
@@ -47,7 +47,7 @@ public class ServiceDescriptor {
 
         this.implementation = implementation;
         this.serviceType = serviceType;
-        this.implementationFactory = () -> this.implementation;
+        this.implementationFactory = (container) -> this.implementation;
         this.lifetime = ServiceLifetime.Singleton;
         this.implementationType = implementation.getClass();
     }

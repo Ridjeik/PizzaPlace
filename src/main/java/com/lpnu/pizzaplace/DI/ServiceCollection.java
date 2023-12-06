@@ -1,11 +1,12 @@
 package com.lpnu.pizzaplace.DI;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ServiceCollection {
 
-    private final List<ServiceDescriptor> _serviceDescriptors = new ArrayList<>();
+    private final List<ServiceDescriptor> _serviceDescriptors = new LinkedList<>();
 
     public void registerSingleton(Class<?> serviceType, Class<?> implementationClass)
     {

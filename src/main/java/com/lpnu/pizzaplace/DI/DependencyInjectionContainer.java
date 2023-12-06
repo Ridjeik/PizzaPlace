@@ -10,7 +10,6 @@ public class DependencyInjectionContainer {
 
     public DependencyInjectionContainer(List<ServiceDescriptor> serviceDescriptors)
     {
-
         this._serviceDescriptors = serviceDescriptors;
     }
 
@@ -41,7 +40,7 @@ public class DependencyInjectionContainer {
         }
 
         //noinspection unchecked
-        return (TInterface) serviceDescriptor.getImplementationFactory().getService();
+        return (TInterface) serviceDescriptor.getImplementationFactory().getService(this);
     }
 
     public DependencyInjectionContainer createScope()
@@ -72,8 +71,8 @@ public class DependencyInjectionContainer {
 
         if (serviceDescriptor.getServiceLifetime() == ServiceLifetime.Singleton)
         {
-            var implementation = baseFactory.getService();
-            return () -> implementation;
+            var implementation = baseFactory.getService(this);
+            return (container) -> implementation;
         }
 
         return baseFactory;
@@ -127,8 +126,8 @@ public class DependencyInjectionContainer {
 
     private ServiceFactory<?> getFactoryForConstructor(Constructor<?> constructor)
     {
-        return () -> {
-            var params = Arrays.stream(constructor.getParameterTypes()).map(this::getService).toArray();
+        return (container) -> {
+            var params = Arrays.stream(constructor.getParameterTypes()).map(container::getService).toArray();
             try {
                 return constructor.newInstance(params);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
