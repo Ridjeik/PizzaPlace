@@ -6,8 +6,6 @@ import java.awt.event.*;
 import java.io.File;
 
 import com.formdev.flatlaf.*;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 
 public class ConfigForm extends JFrame {
 
@@ -33,6 +31,7 @@ public class ConfigForm extends JFrame {
     private File configJsonFile;
 
     public ConfigForm() {
+        initializeNumberModels();
         initializeListeners();
         initializeStyling();
 
@@ -47,7 +46,7 @@ public class ConfigForm extends JFrame {
 
         mainGrid.setBackground(Color.decode("#C4BBAF"));
         manualInputPanel.setBackground(Color.decode("#C4BBAF"));
-        headerLabel.setFont(new Font("Audi Type Wide Bold", Font.TRUETYPE_FONT, 20));
+        headerLabel.setFont(new Font("Audi Type Wide Bold", Font.PLAIN, 20));
 
         readFromFilePanel.setBackground(Color.decode("#C4BBAF"));
 
@@ -59,6 +58,16 @@ public class ConfigForm extends JFrame {
             }
             SwingUtilities.updateComponentTreeUI(this);
         });
+    }
+
+    private void initializeNumberModels() {
+        payDeskCountSpinner.setModel(new SpinnerNumberModel(1, 1, 10, 1));
+
+        cookCountSpinner.setModel(new SpinnerNumberModel(1, 1, 20, 1));
+
+        differentPizzasCountSpinner.setModel(new SpinnerNumberModel(1, 1, 30, 1));
+
+        minimalTimeToCookPizzaSpinner.setModel(new SpinnerNumberModel(10, 10, 40, 1));
     }
 
     private void initializeListeners() {
