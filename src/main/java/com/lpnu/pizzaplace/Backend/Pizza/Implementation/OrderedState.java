@@ -15,7 +15,7 @@ public class OrderedState implements PizzaState {
 
     @Override
     public void doStep() {
-        this.context.setPizzaState(new CookingState(this.context));
+        this.context.setPizzaState(new MakingDoughState(this.context));
         this.context.getMediator().notify(new ChangeStateRequest(this.context.getPizza(), this.context.getPizzaState().asEnum()));
     }
 
