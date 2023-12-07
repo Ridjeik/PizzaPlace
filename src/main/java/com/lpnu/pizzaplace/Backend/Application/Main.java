@@ -7,13 +7,13 @@ import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
 import com.lpnu.pizzaplace.Backend.Customers.Implementation.DefaultCustomerFactory;
 import com.lpnu.pizzaplace.Backend.Customers.Implementation.DefaultPayDeskChoosingStrategyFactory;
 import com.lpnu.pizzaplace.Backend.Customers.Interfaces.CustomerFactory;
-import com.lpnu.pizzaplace.Backend.Customers.Interfaces.PayDeskChoosingStrategy;
 import com.lpnu.pizzaplace.Backend.Customers.Interfaces.PayDeskChoosingStrategyFactory;
-import com.lpnu.pizzaplace.Backend.Integration.Interfaces.ChangePizzaStateRequestHandler;
-import com.lpnu.pizzaplace.Backend.Integration.Implementation.DumbHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Implementation.InterMediator;
+import com.lpnu.pizzaplace.Backend.Integration.Implementation.LoggingHandler;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.ChangePizzaStateRequestHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.Mediator;
-import com.lpnu.pizzaplace.Backend.Logging.Implementation.ConsoleLogger;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.NewOrderRequestHandler;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.PizzaReadinessRequestHandler;
 import com.lpnu.pizzaplace.Backend.Logging.Implementation.FileLogger;
 import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.OneOrderSupplier;
@@ -43,10 +43,15 @@ public class Main {
         collection.registerSingleton(OrderSupplier.class, OneOrderSupplier.class);
         collection.registerSingleton(OrderFactory.class, TestOrderFactory.class);
         collection.registerSingleton(Logger.class, FileLogger.class);
-        collection.registerSingleton(Mediator.class, InterMediator.class);
-        collection.registerSingleton(ChangePizzaStateRequestHandler.class, DumbHandler.class);
         collection.registerSingleton(CustomerFactory.class, DefaultCustomerFactory.class);
         collection.registerSingleton(PayDeskChoosingStrategyFactory.class, DefaultPayDeskChoosingStrategyFactory.class);
+
+        // Mediator registrations
+        collection.registerSingleton(Mediator.class, InterMediator.class);
+        collection.registerSingleton(LoggingHandler.class);
+        collection.registerSingleton(ChangePizzaStateRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
+        collection.registerSingleton(NewOrderRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
+        collection.registerSingleton(PizzaReadinessRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
 
         var container = collection.buildContainer();
         container.getService(OrderSupplier.class).startSupplying();
