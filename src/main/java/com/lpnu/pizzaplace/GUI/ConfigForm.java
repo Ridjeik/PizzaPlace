@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.Map;
 
 import com.formdev.flatlaf.*;
 
@@ -16,8 +17,8 @@ public class ConfigForm extends JFrame {
     private JSpinner cookCountSpinner;
     private JSpinner differentPizzasCountSpinner;
     private JSpinner minimalTimeToCookPizzaSpinner;
-    private JComboBox clientGenerationStrategyComboBox;
-    private JComboBox cookModeComboBox;
+    private JComboBox<String> clientGenerationStrategyComboBox;
+    private JComboBox<String> cookModeComboBox;
     private JPanel mainGrid;
     private JLabel headerLabel;
     private JPanel manualInputPanel;
@@ -25,13 +26,26 @@ public class ConfigForm extends JFrame {
     private JButton loadFileButton;
     private JLabel fileNameLabel;
     private JPanel readFromFilePanel;
+    private JPanel cookOneModePanel;
+    private JSpinner makingDoughtCooksCountSpinner;
+    private JSpinner addingToppingCooksCountSpinner;
+    private JSpinner bakingCooksSpinner;
+    private JLabel cooksCountLabel;
     private ButtonGroup radioButtonsGroup;
 
     // Functional variables
     private File configJsonFile;
 
+    // Map
+    private final Map<String, Integer> clientGenerationStrategyMapping = Map.of("Кожні 5 секунд", 5000,
+            "Кожні 10 секунд", 10000,
+            "Кожні 20 секунд", 20000);
+
+    private final Map<String, Boolean> cookModeMapping = Map.of("Всі дії", true,"Одна дія", false);
+
     public ConfigForm() {
         initializeNumberModels();
+        initializeChooseBoxes();
         initializeListeners();
         initializeStyling();
 
@@ -43,9 +57,12 @@ public class ConfigForm extends JFrame {
 
     private void initializeStyling() {
         readFromFilePanel.hide();
+        cookOneModePanel.hide();
 
+        cookOneModePanel.setBackground(Color.decode("#C4BBAF"));
         mainGrid.setBackground(Color.decode("#C4BBAF"));
         manualInputPanel.setBackground(Color.decode("#C4BBAF"));
+
         headerLabel.setFont(new Font("Audi Type Wide Bold", Font.PLAIN, 20));
 
         readFromFilePanel.setBackground(Color.decode("#C4BBAF"));
@@ -68,6 +85,26 @@ public class ConfigForm extends JFrame {
         differentPizzasCountSpinner.setModel(new SpinnerNumberModel(1, 1, 30, 1));
 
         minimalTimeToCookPizzaSpinner.setModel(new SpinnerNumberModel(10, 10, 40, 1));
+
+        makingDoughtCooksCountSpinner.setModel(new SpinnerNumberModel(1, 1, 8, 1));
+
+        addingToppingCooksCountSpinner.setModel(new SpinnerNumberModel(1, 1, 8, 1));
+
+        bakingCooksSpinner.setModel(new SpinnerNumberModel(1, 1, 4, 1));
+    }
+
+    private void initializeChooseBoxes() {
+        String[] clientGenerationStrategyArray = {"Кожні 5 секунд", "Кожні 10 секунд", "Кожні 20 секунд"};
+
+        for (var item : clientGenerationStrategyArray) {
+            clientGenerationStrategyComboBox.addItem(item);
+        }
+
+        String[] cookModeArray = {"Всі дії", "Одна дія"};
+
+        for (var item : cookModeArray) {
+            cookModeComboBox.addItem(item);
+        }
     }
 
     private void initializeListeners() {
@@ -102,5 +139,23 @@ public class ConfigForm extends JFrame {
                 }
             }
         });
+
+        cookModeComboBox.addItemListener((ItemEvent e) -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                if (cookModeComboBox.getSelectedIndex() == 1) {
+                    cookOneModePanel.show();
+                    cookCountSpinner.hide();
+                    cooksCountLabel.hide();
+                } else {
+                    cookOneModePanel.hide();
+                    cookCountSpinner.show();
+                    cooksCountLabel.show();
+                }
+
+                cookOneModePanel.updateUI();
+            }
+        });
+
+
     }
 }
