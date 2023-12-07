@@ -14,6 +14,7 @@ import com.lpnu.pizzaplace.Backend.Integration.Implementation.DumbHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Implementation.InterMediator;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.Mediator;
 import com.lpnu.pizzaplace.Backend.Logging.Implementation.ConsoleLogger;
+import com.lpnu.pizzaplace.Backend.Logging.Implementation.FileLogger;
 import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.OneOrderSupplier;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.TestOrderFactory;
@@ -41,7 +42,7 @@ public class Main {
         collection.registerSingleton(OrderGenerationObserver.class, Pizzeria.class);
         collection.registerSingleton(OrderSupplier.class, OneOrderSupplier.class);
         collection.registerSingleton(OrderFactory.class, TestOrderFactory.class);
-        collection.registerSingleton(Logger.class, ConsoleLogger.class);
+        collection.registerSingleton(Logger.class, FileLogger.class);
         collection.registerSingleton(Mediator.class, InterMediator.class);
         collection.registerSingleton(ChangePizzaStateRequestHandler.class, DumbHandler.class);
         collection.registerSingleton(CustomerFactory.class, DefaultCustomerFactory.class);
