@@ -1,6 +1,7 @@
 package com.lpnu.pizzaplace.Backend.Pizza.Implementation;
 
 import com.lpnu.pizzaplace.Backend.Integration.Contracts.ChangeStateRequest;
+import com.lpnu.pizzaplace.Backend.Integration.Contracts.PizzaReadinessRequest;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaCreationContext;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaStateEnum;
 import com.lpnu.pizzaplace.Backend.Pizza.Interfaces.PizzaState;
@@ -17,7 +18,7 @@ public class CookingState implements PizzaState {
         try {
             Thread.sleep(10000);
             context.setPizzaState(new ReadyState(this.context));
-            this.context.getMediator().notify(new ChangeStateRequest(this.context.getPizza(), this.context.getPizzaState().asEnum()));
+            this.context.getMediator().notify(new PizzaReadinessRequest(this.context.getPizza()));
         } catch (InterruptedException ignored) {
 
         }
