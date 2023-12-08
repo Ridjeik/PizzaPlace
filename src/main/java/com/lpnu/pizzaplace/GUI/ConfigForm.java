@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
 import com.google.gson.*;
 
 import com.formdev.flatlaf.*;
@@ -15,9 +17,9 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.lpnu.pizzaplace.Backend.Configuration.Contracts.PizzeriaConfig;
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigFactory;
+import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
 
 public class ConfigForm extends JFrame implements ConfigFactory {
-
     // UI Components
     private JRadioButton manualSettingsRadioButton;
     private JRadioButton readFromFileRadioButton;
@@ -41,12 +43,13 @@ public class ConfigForm extends JFrame implements ConfigFactory {
     private JLabel cooksCountLabel;
     private ButtonGroup radioButtonsGroup;
 
+    //DI dependencies
+    private final Logger log;
+
     // Functional variables
     private File configJsonFile;
 
-    private final  Object lock = new Object();
-
-    private volatile Boolean isSubmitClicked;
+    private final CountDownLatch submitSynchronizer;
 
     // Map
     private final Map<String, Integer> clientGenerationStrategyMapping = Map.of("Кожні 5 секунд", 5000,
@@ -55,8 +58,9 @@ public class ConfigForm extends JFrame implements ConfigFactory {
 
     private final Map<String, Boolean> cookModeMapping = Map.of("Всі дії", true,"Одна дія", false);
 
-    public ConfigForm() {
-        isSubmitClicked = false;
+    public ConfigForm(Logger log) {
+        this.log = log;
+        this.submitSynchronizer = new CountDownLatch(1);
 
         initializeNumberModels();
         initializeChooseBoxes();
@@ -178,42 +182,18 @@ public class ConfigForm extends JFrame implements ConfigFactory {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                setChange();
+                submitSynchronizer.countDown();
             }
         });
     }
 
-    private void setChange() {
-        synchronized (lock) {
-            isSubmitClicked = true;
-            isSubmitClicked.notify();
-        }
-    }
-
-    private Boolean getChange() throws InterruptedException {
-        synchronized (lock) {
-            while (!isSubmitClicked) {
-                isSubmitClicked.wait();
-            }
-        }
-        return isSubmitClicked;
-    }
 
     @Override
     public PizzeriaConfig createConfig() {
         this.setVisible(true);
 
-        Thread waitThread = new Thread(() -> {
-            try {
-                getChange();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        waitThread.start();
         try {
-            waitThread.join();
+            submitSynchronizer.await();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -221,49 +201,54 @@ public class ConfigForm extends JFrame implements ConfigFactory {
         this.setVisible(false);
 
         if (manualSettingsRadioButton.isSelected()) {
-            if (cookModeComboBox.getSelectedIndex() == 0) {
-                return PizzeriaConfig
-                        .createBuilder()
-                        .setCooksCount((Integer) cookCountSpinner.getValue())
-                        .setPayDesksCount((Integer) payDeskCountSpinner.getValue())
-                        .setPizzaTypesCount((Integer) differentPizzasCountSpinner.getValue())
-                        .setMinimalTimeToCookPizza((Integer) minimalTimeToCookPizzaSpinner.getValue())
-                        .setOrderGenerationInterval(clientGenerationStrategyMapping.get((String)clientGenerationStrategyComboBox.getSelectedItem()))
-                        .setCookDoingAllOperations(cookModeMapping.get((String)cookModeComboBox.getSelectedItem()))
-                        .createPizzeriaConfig();
-            } else {
-                return PizzeriaConfig
-                        .createBuilder()
-                        .setPayDesksCount((Integer) payDeskCountSpinner.getValue())
-                        .setPizzaTypesCount((Integer) differentPizzasCountSpinner.getValue())
-                        .setMinimalTimeToCookPizza((Integer) minimalTimeToCookPizzaSpinner.getValue())
-                        .setOrderGenerationInterval(clientGenerationStrategyMapping.get((String)clientGenerationStrategyComboBox.getSelectedItem()))
-                        .setCookDoingAllOperations(cookModeMapping.get((String)cookModeComboBox.getSelectedItem()))
-                        .setMakingDoughCooksCount((Integer) makingDoughtCooksCountSpinner.getValue())
-                        .setAddingToppingCooksCount((Integer) addingToppingCooksCountSpinner.getValue())
-                        .setBakingCooksCount((Integer) bakingCooksSpinner.getValue())
-                        .createPizzeriaConfig();
-            }
-        } else {
-            try {
-                if (!configJsonFile.exists()) {
-                    throw new FileNotFoundException();
-                }
-
-                var gsonConverter = new Gson();
-
-                var configType = new TypeToken<PizzeriaConfig>() {}.getType();
-
-                JsonReader jsonReader = new JsonReader(new FileReader(configJsonFile));
-
-                PizzeriaConfig pizzeriaConfig = gsonConverter.fromJson(jsonReader, configType);
-
-                return pizzeriaConfig;
-            } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-            }
+            return getPizzeriaConfigFromForm();
+        } else try {
+            return getPizzeriaConfigFromFile();
+        } catch (FileNotFoundException ex) {
+            log.critical(ex.getMessage());
         }
 
         return null;
+    }
+
+    private PizzeriaConfig getPizzeriaConfigFromFile() throws FileNotFoundException {
+        if (!configJsonFile.exists()) {
+            throw new FileNotFoundException();
+        }
+
+        var gsonConverter = new Gson();
+
+        var configType = new TypeToken<PizzeriaConfig>() {
+        }.getType();
+
+        JsonReader jsonReader = new JsonReader(new FileReader(configJsonFile));
+
+        PizzeriaConfig pizzeriaConfig = gsonConverter.fromJson(jsonReader, configType);
+
+        return pizzeriaConfig;
+    }
+
+    private PizzeriaConfig getPizzeriaConfigFromForm() {
+        var baseBuilder = PizzeriaConfig
+                .createBuilder()
+                .setPayDesksCount((Integer) payDeskCountSpinner.getValue())
+                .setPizzaTypesCount((Integer) differentPizzasCountSpinner.getValue())
+                .setMinimalTimeToCookPizza((Integer) minimalTimeToCookPizzaSpinner.getValue())
+                .setOrderGenerationInterval(clientGenerationStrategyMapping.get((String) clientGenerationStrategyComboBox.getSelectedItem()))
+                .setCookDoingAllOperations(cookModeMapping.get((String) cookModeComboBox.getSelectedItem()));
+
+
+        if (cookModeComboBox.getSelectedIndex() == 0) {
+             baseBuilder.setCooksCount((Integer) cookCountSpinner.getValue());
+        }
+        else
+        {
+            baseBuilder
+                    .setMakingDoughCooksCount((Integer) makingDoughtCooksCountSpinner.getValue())
+                    .setAddingToppingCooksCount((Integer) addingToppingCooksCountSpinner.getValue())
+                    .setBakingCooksCount((Integer) bakingCooksSpinner.getValue());
+        }
+
+        return baseBuilder.createPizzeriaConfig();
     }
 }
