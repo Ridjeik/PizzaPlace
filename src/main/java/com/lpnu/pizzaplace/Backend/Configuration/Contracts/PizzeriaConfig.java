@@ -29,10 +29,10 @@ public class PizzeriaConfig {
         this.isCookDoingAllOperations = isCookDoingAllOperations;
     }
 
-    private PizzeriaConfig(int cooksCount, int payDesksCount, int pizzaTypesCount, int minimalTimeToCookPizza,
+    private PizzeriaConfig(int payDesksCount, int pizzaTypesCount, int minimalTimeToCookPizza,
                            int orderGenerationInterval, boolean isCookDoingAllOperations, int makingDoughCooksCount,
                            int addingToppingCooksCount, int bakingCooksCount) {
-        this.cooksCount = cooksCount;
+        this.cooksCount = makingDoughCooksCount + addingToppingCooksCount + bakingCooksCount;
         this.payDesksCount = payDesksCount;
         this.pizzaTypesCount = pizzaTypesCount;
         this.minimalTimeToCookPizza = minimalTimeToCookPizza;
@@ -149,7 +149,7 @@ public class PizzeriaConfig {
                 return new PizzeriaConfig(cooksCount, payDesksCount, pizzaTypesCount,
                         minimalTimeToCookPizza,orderGenerationInterval, true);
             } else {
-                return new PizzeriaConfig(cooksCount, payDesksCount, pizzaTypesCount,
+                return new PizzeriaConfig(payDesksCount, pizzaTypesCount,
                         minimalTimeToCookPizza,orderGenerationInterval, false,
                         makingDoughCooksCount, addingToppingCooksCount, bakingCooksCount);
             }
