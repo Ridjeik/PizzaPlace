@@ -1,19 +1,36 @@
 package com.lpnu.pizzaplace.Backend.Configuration.Contracts;
 
 public class PizzeriaConfig {
-    private int cooksCount;
+    private final int payDesksCount;
 
-    private int payDesksCount;
+    private final int cooksCount;
 
-    private int pizzaTypesCount;
+    private final int pizzaTypesCount;
 
-    private int orderGenerationInterval;
+    private final int minimalTimeToCookPizza;
 
-    private PizzeriaConfig(int cooksCount, int payDesksCount, int pizzaTypesCount, int orderGenerationInterval) {
+    private final int orderGenerationInterval;
+
+    private final boolean isCookDoingAllOperations;
+
+    private int makingDoughCooksCount;
+
+    private int addingToppingCooksCount;
+
+    private int bakingCooksCount;
+
+    private PizzeriaConfig(int cooksCount, int payDesksCount, int pizzaTypesCount, int minimalTimeToCookPizza,
+                           int orderGenerationInterval, boolean isCookDoingAllOperations, int makingDoughCooksCount,
+                           int addingToppingCooksCount, int bakingCooksCount) {
         this.cooksCount = cooksCount;
         this.payDesksCount = payDesksCount;
         this.pizzaTypesCount = pizzaTypesCount;
+        this.minimalTimeToCookPizza = minimalTimeToCookPizza;
         this.orderGenerationInterval = orderGenerationInterval;
+        this.isCookDoingAllOperations = isCookDoingAllOperations;
+        this.makingDoughCooksCount = makingDoughCooksCount;
+        this.addingToppingCooksCount = addingToppingCooksCount;
+        this.bakingCooksCount = bakingCooksCount;
     }
 
     public int getCooksCount() {
@@ -30,6 +47,27 @@ public class PizzeriaConfig {
 
     public int getOrderGenerationInterval() { return orderGenerationInterval; }
 
+
+    public int getMinimalTimeToCookPizza() {
+        return minimalTimeToCookPizza;
+    }
+
+    public boolean isCookDoingAllOperations() {
+        return isCookDoingAllOperations;
+    }
+
+    public int getMakingDoughCooksCount() {
+        return makingDoughCooksCount;
+    }
+
+    public int getAddingToppingCooksCount() {
+        return addingToppingCooksCount;
+    }
+
+    public int getBakingCooksCount() {
+        return bakingCooksCount;
+    }
+
     @Override
     public String toString() {
         return "PizzeriaConfig{" +
@@ -45,10 +83,23 @@ public class PizzeriaConfig {
     }
 
     public static class PizzeriaConfigBuilder {
-        private int cooksCount;
         private int payDesksCount;
+
+        private int cooksCount;
+
         private int pizzaTypesCount;
+
+        private int minimalTimeToCookPizza;
+
         private int orderGenerationInterval;
+
+        private boolean isCookDoingAllOperations;
+
+        private int makingDoughCooksCount;
+
+        private int addingToppingCooksCount;
+
+        private int bakingCooksCount;
 
         public PizzeriaConfigBuilder setCooksCount(int cooksCount) {
             this.cooksCount = cooksCount;
@@ -70,8 +121,41 @@ public class PizzeriaConfig {
             return this;
         }
 
+        public PizzeriaConfigBuilder setMinimalTimeToCookPizza(int minimalTimeToCookPizza) {
+            this.minimalTimeToCookPizza = minimalTimeToCookPizza;
+            return this;
+        }
+
+        public PizzeriaConfigBuilder setCookDoingAllOperations(boolean cookDoingAllOperations) {
+            this.isCookDoingAllOperations = cookDoingAllOperations;
+            return this;
+        }
+
+        public PizzeriaConfigBuilder setMakingDoughCooksCount(int makingDoughCooksCount) {
+            this.makingDoughCooksCount = makingDoughCooksCount;
+            return this;
+        }
+
+        public PizzeriaConfigBuilder setAddingToppingCooksCount(int addingToppingCooksCount) {
+            this.addingToppingCooksCount = addingToppingCooksCount;
+            return this;
+        }
+
+        public PizzeriaConfigBuilder setBakingCooksCount(int bakingCooksCount) {
+            this.bakingCooksCount = bakingCooksCount;
+            return this;
+        }
+
         public PizzeriaConfig createPizzeriaConfig() {
-            return new PizzeriaConfig(cooksCount, payDesksCount, pizzaTypesCount, orderGenerationInterval);
+            if (isCookDoingAllOperations) {
+                return new PizzeriaConfig(cooksCount, payDesksCount, pizzaTypesCount,
+                        minimalTimeToCookPizza, orderGenerationInterval, true,
+                        makingDoughCooksCount, addingToppingCooksCount, bakingCooksCount);
+            } else {
+                return new PizzeriaConfig(makingDoughCooksCount + addingToppingCooksCount + bakingCooksCount,payDesksCount, pizzaTypesCount,
+                        minimalTimeToCookPizza,orderGenerationInterval, false,
+                        makingDoughCooksCount, addingToppingCooksCount, bakingCooksCount);
+            }
         }
     }
 }

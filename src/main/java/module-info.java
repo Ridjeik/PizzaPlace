@@ -1,8 +1,9 @@
 module com.lpnu.pizzaplace {
-    requires javafx.controls;
-    requires javafx.fxml;
+    requires java.desktop;
+    requires com.formdev.flatlaf;
+    requires javafx.graphics;
+    requires com.google.gson;
 
-
-    opens com.lpnu.pizzaplace.GUI to javafx.fxml;
-    exports com.lpnu.pizzaplace.GUI;
+    opens com.lpnu.pizzaplace.Backend.Configuration.Contracts to com.google.gson;
+    exports com.lpnu.pizzaplace.Backend.Configuration.Contracts;
 }

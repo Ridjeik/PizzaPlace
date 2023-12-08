@@ -1,0 +1,8 @@
+{
+  "payDesksCount": 3,
+  "cooksCount": 5,
+  "pizzaTypesCount": 4,
+  "minimalTimeToCookPizza": 25,
+  "orderGenerationInterval": 5000,
+  "isCookDoingAllOperations": true
+}

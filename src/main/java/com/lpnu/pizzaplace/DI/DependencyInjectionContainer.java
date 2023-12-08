@@ -102,7 +102,7 @@ public class DependencyInjectionContainer {
 
         if (constructorsCount == 1)
         {
-            return possibleConstructors.getFirst();
+            return possibleConstructors.stream().findFirst().orElse(null);
         }
 
         //We should prioritize constructor with parameters if there are many ones. So we remove parameterless constructors and try again
@@ -115,7 +115,7 @@ public class DependencyInjectionContainer {
 
         if (constructorsCount == 1)
         {
-            return possibleConstructors.getFirst();
+            return possibleConstructors.stream().findFirst().orElse(null);
         }
 
         StringBuilder stringBuilder = new StringBuilder("The constructor choice is ambiguous between this ones: \n");
