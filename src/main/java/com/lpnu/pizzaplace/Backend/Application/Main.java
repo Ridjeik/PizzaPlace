@@ -8,11 +8,13 @@ import com.lpnu.pizzaplace.Backend.Customers.Implementation.DefaultCustomerFacto
 import com.lpnu.pizzaplace.Backend.Customers.Implementation.DefaultPayDeskChoosingStrategyFactory;
 import com.lpnu.pizzaplace.Backend.Customers.Interfaces.CustomerFactory;
 import com.lpnu.pizzaplace.Backend.Customers.Interfaces.PayDeskChoosingStrategyFactory;
-import com.lpnu.pizzaplace.Backend.Integration.Implementation.DumbHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Implementation.InterMediator;
+import com.lpnu.pizzaplace.Backend.Integration.Implementation.LoggingHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.ChangePizzaStateRequestHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.Mediator;
-import com.lpnu.pizzaplace.Backend.Logging.Implementation.ConsoleLogger;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.NewOrderRequestHandler;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.PizzaReadinessRequestHandler;
+import com.lpnu.pizzaplace.Backend.Logging.Implementation.FileLogger;
 import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.EquallyTimedOrderSupplier;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.OneOrderSupplier;
@@ -33,7 +35,7 @@ import com.lpnu.pizzaplace.GUI.ConfigForm;
 public class Main {
     public static void main(String[] args) {
         ServiceCollection collection = new ServiceCollection();
-        collection.registerSingleton(ConfigFactory.class, ConfigForm.class); // Was BaseConfigFactory
+        collection.registerSingleton(ConfigFactory.class, ConfigForm.class);
         collection.registerSingleton(ConfigSupplier.class, StaticConfigSupplier.class);
         collection.registerSingleton(PizzaCreationContextFactory.class, DefaultPizzaCreationContextFactory.class);
         collection.registerSingleton(PizzaFactory.class, DefaultPizzaFactory.class);
@@ -42,11 +44,16 @@ public class Main {
         collection.registerSingleton(OrderGenerationObserver.class, Pizzeria.class);
         collection.registerSingleton(OrderSupplier.class, OneOrderSupplier.class);
         collection.registerSingleton(OrderFactory.class, TestOrderFactory.class);
-        collection.registerSingleton(Logger.class, ConsoleLogger.class);
-        collection.registerSingleton(Mediator.class, InterMediator.class);
-        collection.registerSingleton(ChangePizzaStateRequestHandler.class, DumbHandler.class);
+        collection.registerSingleton(Logger.class, FileLogger.class);
         collection.registerSingleton(CustomerFactory.class, DefaultCustomerFactory.class);
         collection.registerSingleton(PayDeskChoosingStrategyFactory.class, DefaultPayDeskChoosingStrategyFactory.class);
+
+        // Mediator registrations
+        collection.registerSingleton(Mediator.class, InterMediator.class);
+        collection.registerSingleton(LoggingHandler.class);
+        collection.registerSingleton(ChangePizzaStateRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
+        collection.registerSingleton(NewOrderRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
+        collection.registerSingleton(PizzaReadinessRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
 
         var container = collection.buildContainer();
         container.getService(OrderSupplier.class).startSupplying();
