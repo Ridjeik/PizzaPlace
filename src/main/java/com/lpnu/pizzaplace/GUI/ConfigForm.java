@@ -188,6 +188,8 @@ public class ConfigForm extends JFrame implements ConfigFactory {
 
     @Override
     public PizzeriaConfig createConfig() {
+        this.setVisible(true);
+
         Thread waitThread = new Thread(() -> {
             synchronized (lock) {
                 while (!isSubmitClicked) {
@@ -206,6 +208,8 @@ public class ConfigForm extends JFrame implements ConfigFactory {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        this.setVisible(false);
 
         if (manualSettingsRadioButton.isSelected()) {
             if (cookModeComboBox.getSelectedIndex() == 0) {

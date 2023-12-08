@@ -22,9 +22,6 @@ public class StaticConfigSupplier implements ConfigSupplier {
         if (cachedConfig == null)
         {
             cachedConfig = configFactory.createConfig();
-            if (configFactory instanceof ConfigForm) {
-                ((ConfigForm) configFactory).dispose();
-            }
         }
         return cachedConfig;
     }
