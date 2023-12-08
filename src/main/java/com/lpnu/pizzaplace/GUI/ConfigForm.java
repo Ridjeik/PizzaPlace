@@ -44,9 +44,9 @@ public class ConfigForm extends JFrame implements ConfigFactory {
     // Functional variables
     private File configJsonFile;
 
-    private final Object lock = new Object();
+    private final  Object lock = new Object();
 
-    private boolean isSubmitClicked;
+    private volatile Boolean isSubmitClicked;
 
     // Map
     private final Map<String, Integer> clientGenerationStrategyMapping = Map.of("Кожні 5 секунд", 5000,
@@ -178,12 +178,25 @@ public class ConfigForm extends JFrame implements ConfigFactory {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                synchronized (lock) {
-                    isSubmitClicked = true;
-                    lock.notify();
-                }
+                setChange();
             }
         });
+    }
+
+    private void setChange() {
+        synchronized (lock) {
+            isSubmitClicked = true;
+            isSubmitClicked.notify();
+        }
+    }
+
+    private Boolean getChange() throws InterruptedException {
+        synchronized (lock) {
+            while (!isSubmitClicked) {
+                isSubmitClicked.wait();
+            }
+        }
+        return isSubmitClicked;
     }
 
     @Override
@@ -191,14 +204,10 @@ public class ConfigForm extends JFrame implements ConfigFactory {
         this.setVisible(true);
 
         Thread waitThread = new Thread(() -> {
-            synchronized (lock) {
-                while (!isSubmitClicked) {
-                    try {
-                        lock.wait();
-                    } catch (InterruptedException ignored) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
+            try {
+                getChange();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         });
 
