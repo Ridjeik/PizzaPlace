@@ -1,11 +1,10 @@
 package com.lpnu.pizzaplace.GUI;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.MatteBorder;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -15,53 +14,80 @@ import java.io.File;
 import java.io.IOException;
 
 public class SimulationWindow extends JFrame {
+    // UI Components
     private JTable cooksTable;
     private JTable ordersTable;
     private JPanel mainGrid;
     private JPanel kitchenPanel;
     private JPanel queuePanel;
+    private JScrollPane cooksScrollPane;
+    private JScrollPane ordersScrollPane;
+    private JPanel makingDoughPanel;
+    private JPanel addingToppingPanel;
+    private JPanel bakingPanel;
 
-    private final int payDesksCount = 10;
+    // Styling constants
+    private final Color backgroundColor = Color.decode("#C4BBAF");
 
-    public SimulationWindow() {
+    // Functional variables
+    private final int payDesksCount;
+
+    public SimulationWindow(ConfigSupplier configSupplier) {
+        payDesksCount = configSupplier.getConfig().getPayDesksCount();
+    }
+
+    public void showWindow() {
         initializeStyling();
         initializeTableModels();
+        initializeCustomersQueue();
+        initializeKitchen(makingDoughPanel, "src/main/resources/Images/making_dough.png");
+        initializeKitchen(addingToppingPanel, "src/main/resources/Images/topping.png");
+        initializeKitchen(bakingPanel, "src/main/resources/Images/baking.png");
 
         setContentPane(mainGrid);
+
         pack();
         setSize(1200, 900);
 
+        setVisible(true);
+    }
 
+    private void initializeKitchen(JPanel panel, String resourcePath) {
+        panel.setBackground(backgroundColor);
+        panel.setLayout(new GridLayout(10, 1));
+
+        for (int row = 0; row < 10; row++) {
+            ImagePanel cellPane = new ImagePanel(resourcePath, 100, 100);
+
+            cellPane.setBackground(backgroundColor);
+            cellPane.setShouldPaint(true);
+            panel.add(cellPane);
+        }
+        panel.repaint();
+    }
+
+    private void initializeCustomersQueue() {
         queuePanel.setLayout(new GridLayout(payDesksCount, 10));
         for (int row = 0; row < payDesksCount; row++) {
             for (int col = 0; col < 10; col++) {
 
-                var cellPane = new ImagePanel();
-                Border border = null;
-                cellPane.setBackground(Color.decode("#C4BBAF"));
-                if (row < payDesksCount - 1) {
-                    if (col < payDesksCount - 1) {
-                        border = new MatteBorder(1, 1, 0, 0, Color.BLACK);
-                    } else {
-                        border = new MatteBorder(1, 1, 0, 1, Color.BLACK);
-                    }
+                ImagePanel cellPane;
+
+                if (col == 0) {
+                    cellPane = new ImagePanel("src/main/resources/Images/pay_desk.png", 200, 200);
+                    cellPane.setShouldPaint(true);
                 } else {
-                    if (col < 9) {
-                        border = new MatteBorder(1, 1, 1, 0, Color.BLACK);
-                    } else {
-                        border = new MatteBorder(1, 1, 1, 1, Color.BLACK);
-                    }
+                    cellPane = new ImagePanel("src/main/resources/Images/customer.png", 200, 200);
                 }
-                cellPane.setBorder(border);
+
+                cellPane.setBackground(backgroundColor);
                 queuePanel.add(cellPane);
             }
         }
 
-        ((ImagePanel)queuePanel.getComponent(0)).setShouldPaint(true);
+        ((ImagePanel) queuePanel.getComponent(1)).setShouldPaint(true);
 
         queuePanel.repaint();
-
-        setVisible(true);
     }
 
     private void initializeTableModels() {
@@ -115,19 +141,13 @@ public class SimulationWindow extends JFrame {
     }
 
     private void initializeStyling() {
-        mainGrid.setBackground(Color.decode("#C4BBAF"));
+        mainGrid.setBackground(backgroundColor);
 
-        queuePanel.setBackground(Color.decode("#C4BBAF"));
-        kitchenPanel.setBackground(Color.decode("#C4BBAF"));
+        queuePanel.setBackground(backgroundColor);
+        kitchenPanel.setBackground(backgroundColor);
 
-
-        ordersTable.getTableHeader().setBackground(Color.decode("#918a81"));
-        ordersTable.getTableHeader().setForeground(Color.decode("#FFFFFF"));
-        ordersTable.setBackground(Color.decode("#C4BBAF"));
-
-        cooksTable.getTableHeader().setBackground(Color.decode("#918a81"));
-        cooksTable.getTableHeader().setForeground(Color.decode("#FFFFFF"));
-        cooksTable.setBackground(Color.decode("#C4BBAF"));
+        initializeStylingForTableAndScrollPane(cooksTable, cooksScrollPane);
+        initializeStylingForTableAndScrollPane(ordersTable, ordersScrollPane);
 
         EventQueue.invokeLater(() -> {
             try {
@@ -139,17 +159,39 @@ public class SimulationWindow extends JFrame {
         });
 
         ordersTable.updateUI();
+        cooksTable.updateUI();
+    }
+
+    private void initializeStylingForTableAndScrollPane(JTable table, JScrollPane scrollPane) {
+        scrollPane.getViewport().setBackground(backgroundColor);
+
+        scrollPane.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, backgroundColor));
+
+        table.setSelectionBackground(Color.decode("#b7d0e2"));
+
+        table.setSelectionForeground(Color.decode("#000000"));
+
+
+        table.getTableHeader().setBackground(Color.decode("#918a81"));
+        table.getTableHeader().setForeground(Color.decode("#FFFFFF"));
+        table.setBackground(backgroundColor);
     }
 
     private class ImagePanel extends JPanel{
 
         private BufferedImage image;
 
+        private final int preferredWidth;
+
+        private final int preferredHeight;
+
         private boolean shouldPaint;
 
-        public ImagePanel() {
+        public ImagePanel(String resourcePath, int preferredWidth, int preferredHeight) {
+            this.preferredWidth = preferredWidth;
+            this.preferredHeight = preferredHeight;
             try {
-                image = ImageIO.read(new File("src/main/resources/Images/customer.png"));
+                image = ImageIO.read(new File(resourcePath));
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -159,7 +201,6 @@ public class SimulationWindow extends JFrame {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (image != null && shouldPaint) {
-                // Scale the image to fit the panel
                 Image scaledImage = image.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH);
                 g.drawImage(scaledImage, 0, 0, this);
             }
@@ -167,7 +208,7 @@ public class SimulationWindow extends JFrame {
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(200, 200);
+            return new Dimension(preferredWidth, preferredHeight);
         }
 
         public void setShouldPaint(boolean shouldPaint) {
@@ -210,8 +251,7 @@ public class SimulationWindow extends JFrame {
         @Override
         public Object getCellEditorValue() {
             if (isPushed) {
-                // Perform action when button is pressed
-                System.out.println(label + ": Button pressed!");
+                System.out.println("Button pressed!");
             }
             isPushed = false;
             return label;
