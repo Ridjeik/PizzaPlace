@@ -7,12 +7,11 @@ import com.lpnu.pizzaplace.Backend.Pizza.Implementation.ReadyState;
 public class Cook {
 
     private PizzaCreationContext currentContext;
-    private boolean isStopped;
+    private boolean isStopped = false;
 
     public void processPizza(PizzaCreationContext context)
     {
         this.currentContext = context;
-        this.isStopped = false;
         new Thread(this::processPizzaImpl).start();
     }
 
@@ -30,9 +29,11 @@ public class Cook {
     public void stop(){
         isStopped = true;
     }
+
     public void resume(){
         isStopped = false;
     }
+
     public boolean canProcess(PizzaCreationContext context)
     {
         return !(context.getPizzaState() instanceof ReadyState);

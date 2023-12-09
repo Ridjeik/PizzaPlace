@@ -14,6 +14,7 @@ import com.lpnu.pizzaplace.Backend.Integration.Interfaces.ChangePizzaStateReques
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.Mediator;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.NewOrderRequestHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.PizzaReadinessRequestHandler;
+import com.lpnu.pizzaplace.Backend.Logging.Implementation.ConsoleLogger;
 import com.lpnu.pizzaplace.Backend.Logging.Implementation.FileLogger;
 import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.EquallyTimedOrderSupplier;
@@ -44,7 +45,7 @@ public class Main {
         collection.registerSingleton(OrderGenerationObserver.class, Pizzeria.class);
         collection.registerSingleton(OrderSupplier.class, OneOrderSupplier.class);
         collection.registerSingleton(OrderFactory.class, TestOrderFactory.class);
-        collection.registerSingleton(Logger.class, FileLogger.class);
+        collection.registerSingleton(Logger.class, ConsoleLogger.class);
         collection.registerSingleton(CustomerFactory.class, DefaultCustomerFactory.class);
         collection.registerSingleton(PayDeskChoosingStrategyFactory.class, DefaultPayDeskChoosingStrategyFactory.class);
 
