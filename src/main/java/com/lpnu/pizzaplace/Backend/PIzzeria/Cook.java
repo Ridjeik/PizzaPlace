@@ -7,17 +7,19 @@ import com.lpnu.pizzaplace.Backend.Pizza.Implementation.ReadyState;
 public class Cook {
 
     private PizzaCreationContext currentContext;
+    private boolean isStopped;
 
     public void processPizza(PizzaCreationContext context)
     {
         this.currentContext = context;
+        this.isStopped = false;
         new Thread(this::processPizzaImpl).start();
     }
 
     private void processPizzaImpl()
     {
         this.currentContext.setBeingCooked(true);
-        while(this.canProcess(this.currentContext))
+        while(this.canProcess(this.currentContext) && !this.isStopped)
         {
             this.currentContext.getPizzaState().doStep();
         }
@@ -25,6 +27,12 @@ public class Cook {
         this.currentContext = null;
     }
 
+    public void stop(){
+        isStopped = true;
+    }
+    public void resume(){
+        isStopped = false;
+    }
     public boolean canProcess(PizzaCreationContext context)
     {
         return !(context.getPizzaState() instanceof ReadyState);
