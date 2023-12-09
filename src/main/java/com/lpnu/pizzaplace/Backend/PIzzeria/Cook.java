@@ -23,6 +23,10 @@ public class Cook {
         new Thread(this::processPizzaImpl).start();
     }
 
+    public PizzaCreationContext getCurrentContext() {
+        return currentContext;
+    }
+
     private void processPizzaImpl()
     {
         this.currentContext.setBeingCooked(true);

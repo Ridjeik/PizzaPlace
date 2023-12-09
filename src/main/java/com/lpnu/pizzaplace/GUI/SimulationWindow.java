@@ -2,6 +2,13 @@ package com.lpnu.pizzaplace.GUI;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
+import com.lpnu.pizzaplace.Backend.Customers.Interfaces.PayDeskChoosingStrategy;
+import com.lpnu.pizzaplace.Backend.Integration.Contracts.*;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.*;
+import com.lpnu.pizzaplace.Backend.PIzzeria.Cook;
+import com.lpnu.pizzaplace.Backend.PIzzeria.PayDesk;
+import com.lpnu.pizzaplace.Backend.PIzzeria.PayDeskCollection;
+import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaCreationContext;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -12,8 +19,16 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
+import java.util.List;
 
-public class SimulationWindow extends JFrame {
+public class SimulationWindow extends JFrame
+        implements NewCustomerRequestHandler,
+                    PizzeriaInitializeRequestHandler,
+                    PizzaOrderedRequestHandler,
+                    PizzaReadinessRequestHandler,
+                    ChangePizzaStateRequestHandler {
+
     // UI Components
     private JTable cooksTable;
     private JTable ordersTable;
@@ -32,8 +47,26 @@ public class SimulationWindow extends JFrame {
     // Functional variables
     private final int payDesksCount;
 
+    private final List<String[]> ordersTableData;
+
+    private final List<String[]> cookTableData;
+
+    private PayDeskCollection payDeskCollection;
+
+    private List<Cook> cooksList;
+
+    private final Map<PayDesk, Integer> payDeskIntegerMap;
+
+    private final List<PizzaCreationContext> pizzaCreationContextList;
+
     public SimulationWindow(ConfigSupplier configSupplier) {
         payDesksCount = configSupplier.getConfig().getPayDesksCount();
+        ordersTableData = new ArrayList<>();
+        cookTableData = new ArrayList<>();
+        payDeskIntegerMap = new HashMap<>();
+        pizzaCreationContextList = new ArrayList<>();
+
+        showWindow();
     }
 
     public void showWindow() {
@@ -85,8 +118,6 @@ public class SimulationWindow extends JFrame {
             }
         }
 
-        ((ImagePanel) queuePanel.getComponent(1)).setShouldPaint(true);
-
         queuePanel.repaint();
     }
 
@@ -94,39 +125,13 @@ public class SimulationWindow extends JFrame {
         String[] ordersTableColumnNames = {"Ім'я клієнта", "Назва піци", "Стадія приготування"};
         String[] cooksTableColumnNames = {"Ім'я кухара", "Спеціалізація", "Готує", "Зупинити кухара"};
 
-        String[][] ordersTableMockData = {
-                {"Mike", "Pepperoni", "Done"},
-                {"Mike", "Pepperoni", "Done"},
-                {"Mike", "Pepperoni", "Done"},
-                {"Mike", "Pepperoni", "Done"},
-                {"Mike", "Pepperoni", "Done"},
-                {"Mike", "Pepperoni", "Done"},
-                {"Mike", "Pepperoni", "Done"},
-                {"Mike", "Pepperoni", "Done"},
-                {"Mike", "Pepperoni", "Done"},
-                {"Mike", "Pepperoni", "Done"}
-        };
-
-        String[][] cooksTableMockData = {
-                {"John", "Topping", "Pepperoni"},
-                {"John", "Topping", "Pepperoni"},
-                {"John", "Topping", "Pepperoni"},
-                {"John", "Topping", "Pepperoni"},
-                {"John", "Topping", "Pepperoni"},
-                {"John", "Topping", "Pepperoni"},
-                {"John", "Topping", "Pepperoni"},
-                {"John", "Topping", "Pepperoni"},
-                {"John", "Topping", "Pepperoni"},
-                {"John", "Topping", "Pepperoni"}
-        };
-
         EventQueue.invokeLater(() -> {
             DefaultTableModel ordersTableModel = (DefaultTableModel) ordersTable.getModel();
-            ordersTableModel.setDataVector(ordersTableMockData, ordersTableColumnNames);
+            ordersTableModel.setDataVector(null, ordersTableColumnNames);
             ordersTable.updateUI();
 
             DefaultTableModel cooksTableModel = (DefaultTableModel) cooksTable.getModel();
-            cooksTableModel.setDataVector(cooksTableMockData, cooksTableColumnNames);
+            cooksTableModel.setDataVector(null, cooksTableColumnNames);
 
             TableColumnModel cookTableColumnModel = cooksTable.getColumnModel();
             cookTableColumnModel.getColumn(3).setCellRenderer(new ButtonRenderer());
@@ -175,6 +180,127 @@ public class SimulationWindow extends JFrame {
         table.getTableHeader().setBackground(Color.decode("#918a81"));
         table.getTableHeader().setForeground(Color.decode("#FFFFFF"));
         table.setBackground(backgroundColor);
+    }
+
+    @Override
+    public void handle(PizzaReadinessRequest request) {
+        var customer = request.getPizza().getCustomer();
+
+        if (pizzaCreationContextList.stream().
+                filter(pizzaCreationContext -> pizzaCreationContext.getPizza().getCustomer().equals(customer)).
+                allMatch(PizzaCreationContext::isReady)) {
+
+            var payDeskWithCustomerToDelete = payDeskCollection.
+                    getPayDesks().
+                    stream().
+                    filter(payDesk -> payDesk.getCustomers().
+                            contains(request.getPizza().getCustomer())).
+                    findFirst();
+
+            EventQueue.invokeLater(() -> {
+                ((ImagePanel) queuePanel.
+                        getComponent((payDeskIntegerMap.get(payDeskWithCustomerToDelete.get()) - 1) * 10 + payDeskWithCustomerToDelete.get().getCustomersCount() + 1)).
+                        setShouldPaint(false);
+
+                queuePanel.repaint();
+            });
+
+            payDeskWithCustomerToDelete.get().deleteCustomer(customer);
+
+        }
+    }
+
+    @Override
+    public void handle(ChangeStateRequest request) {
+        EventQueue.invokeLater(() -> {
+            String[] ordersTableColumnNames = {"Ім'я клієнта", "Назва піци", "Стадія приготування"};
+
+            ordersTableData.clear();
+
+            pizzaCreationContextList.forEach(pizzaCreationContext -> {
+                ordersTableData.add(new String[]{pizzaCreationContext.getPizza().getCustomer().getName(),
+                        pizzaCreationContext.getPizza().getName(),
+                        pizzaCreationContext.getPizzaState().asEnum().toString()});
+            });
+
+            var ordersTableModel = (DefaultTableModel) ordersTable.getModel();
+
+            String[][] array = new String[ordersTableData.size()][];
+            for (int i = 0; i < ordersTableData.size(); i++) {
+                array[i] = ordersTableData.get(i);
+            }
+
+            ordersTableModel.setDataVector(array, ordersTableColumnNames);
+        });
+
+        ordersTable.updateUI();
+    }
+
+    @Override
+    public void handle(NewCustomerRequest request) {
+        ((ImagePanel) queuePanel.
+                getComponent((payDeskIntegerMap.get(request.getPayDesk()) - 1) * 10 + request.getPayDesk().getCustomersCount())).
+                setShouldPaint(true);
+
+        queuePanel.repaint();
+    }
+
+    @Override
+    public void handle(PizzaOrderedRequest request) {
+        EventQueue.invokeLater(() -> {
+            String[] ordersTableColumnNames = {"Ім'я клієнта", "Назва піци", "Стадія приготування"};
+
+            pizzaCreationContextList.add(request.getContext());
+
+            ordersTableData.add(new String[]{request.getContext().getPizza().getCustomer().getName(),
+                    request.getContext().getPizza().getName(),
+                    request.getContext().getPizzaState().asEnum().toString()});
+
+            var ordersTableModel = (DefaultTableModel) ordersTable.getModel();
+
+            String[][] array = new String[ordersTableData.size()][];
+            for (int i = 0; i < ordersTableData.size(); i++) {
+                array[i] = ordersTableData.get(i);
+            }
+
+            ordersTableModel.setDataVector(array, ordersTableColumnNames);
+        });
+
+        ordersTable.updateUI();
+    }
+
+    @Override
+    public void handle(PizzeriaInitializeRequest request) {
+        this.cooksList = request.getCooks();
+
+        EventQueue.invokeLater(() -> {
+            String[] cooksTableColumnNames = {"Ім'я кухара", "Спеціалізація", "Готує", "Зупинити кухара"};
+
+            cooksList.forEach((cook) -> {
+                cookTableData.add(new String[]{cook.toString(),
+                        "Something",
+                        ""});
+            });
+
+            var cooksTableModel = (DefaultTableModel) cooksTable.getModel();
+
+            String[][] array = new String[cookTableData.size()][];
+            for (int i = 0; i < cookTableData.size(); i++) {
+                array[i] = cookTableData.get(i);
+            }
+
+            cooksTableModel.setDataVector(array, cooksTableColumnNames);
+        });
+
+        cooksTable.updateUI();
+
+        this.payDeskCollection = request.getPayDesks();
+
+        Integer id = 1;
+        for (var payDesk : payDeskCollection.getPayDesks()) {
+            payDeskIntegerMap.put(payDesk, id);
+            id++;
+        }
     }
 
     private class ImagePanel extends JPanel{

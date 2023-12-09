@@ -1,5 +1,6 @@
 package com.lpnu.pizzaplace.Backend.Pizza.Implementation;
 
+import com.lpnu.pizzaplace.Backend.Integration.Contracts.PizzaReadinessRequest;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaCreationContext;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaStateEnum;
 import com.lpnu.pizzaplace.Backend.Pizza.Interfaces.PizzaState;
@@ -14,7 +15,7 @@ public class ReadyState implements PizzaState {
 
     @Override
     public void doStep() {
-        this.context.setReady(true);
+
     }
 
     @Override
