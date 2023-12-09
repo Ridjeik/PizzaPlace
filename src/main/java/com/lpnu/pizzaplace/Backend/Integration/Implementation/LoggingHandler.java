@@ -1,14 +1,14 @@
 package com.lpnu.pizzaplace.Backend.Integration.Implementation;
 
-import com.lpnu.pizzaplace.Backend.Integration.Contracts.NewOrderRequest;
+import com.lpnu.pizzaplace.Backend.Integration.Contracts.NewCustomerRequest;
 import com.lpnu.pizzaplace.Backend.Integration.Contracts.PizzaReadinessRequest;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.ChangePizzaStateRequestHandler;
-import com.lpnu.pizzaplace.Backend.Integration.Interfaces.NewOrderRequestHandler;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.NewCustomerRequestHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.PizzaReadinessRequestHandler;
 import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
 import com.lpnu.pizzaplace.Backend.Integration.Contracts.ChangeStateRequest;
 
-public class LoggingHandler implements ChangePizzaStateRequestHandler, NewOrderRequestHandler, PizzaReadinessRequestHandler {
+public class LoggingHandler implements ChangePizzaStateRequestHandler, NewCustomerRequestHandler, PizzaReadinessRequestHandler {
 
     private final Logger logger;
 
@@ -25,8 +25,8 @@ public class LoggingHandler implements ChangePizzaStateRequestHandler, NewOrderR
     }
 
     @Override
-    public void handle(NewOrderRequest request) {
-        logger.trace(String.format("%s came to pizzeria", request.getOrder().getCustomer().getName()));
+    public void handle(NewCustomerRequest request) {
+        logger.trace(String.format("%s came to pizzeria", request.getCustomer().getName()));
     }
 
     @Override
