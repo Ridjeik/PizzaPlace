@@ -1,6 +1,5 @@
 package com.lpnu.pizzaplace.Backend.Application;
 
-import com.lpnu.pizzaplace.Backend.Configuration.Implementation.BaseConfigFactory;
 import com.lpnu.pizzaplace.Backend.Configuration.Implementation.StaticConfigSupplier;
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigFactory;
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
@@ -12,11 +11,11 @@ import com.lpnu.pizzaplace.Backend.Integration.Implementation.InterMediator;
 import com.lpnu.pizzaplace.Backend.Integration.Implementation.LoggingHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.ChangePizzaStateRequestHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.Mediator;
-import com.lpnu.pizzaplace.Backend.Integration.Interfaces.NewOrderRequestHandler;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.NewCustomerRequestHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.PizzaReadinessRequestHandler;
+import com.lpnu.pizzaplace.Backend.Logging.Implementation.ConsoleLogger;
 import com.lpnu.pizzaplace.Backend.Logging.Implementation.FileLogger;
 import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
-import com.lpnu.pizzaplace.Backend.Orders.Implementation.EquallyTimedOrderSupplier;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.OneOrderSupplier;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.TestOrderFactory;
 import com.lpnu.pizzaplace.Backend.Orders.Interfaces.OrderFactory;
@@ -44,7 +43,7 @@ public class Main {
         collection.registerSingleton(OrderGenerationObserver.class, Pizzeria.class);
         collection.registerSingleton(OrderSupplier.class, OneOrderSupplier.class);
         collection.registerSingleton(OrderFactory.class, TestOrderFactory.class);
-        collection.registerSingleton(Logger.class, FileLogger.class);
+        collection.registerSingleton(Logger.class, ConsoleLogger.class);
         collection.registerSingleton(CustomerFactory.class, DefaultCustomerFactory.class);
         collection.registerSingleton(PayDeskChoosingStrategyFactory.class, DefaultPayDeskChoosingStrategyFactory.class);
 
@@ -52,7 +51,7 @@ public class Main {
         collection.registerSingleton(Mediator.class, InterMediator.class);
         collection.registerSingleton(LoggingHandler.class);
         collection.registerSingleton(ChangePizzaStateRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
-        collection.registerSingleton(NewOrderRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
+        collection.registerSingleton(NewCustomerRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
         collection.registerSingleton(PizzaReadinessRequestHandler.class, provider -> provider.getService(LoggingHandler.class));
 
         var container = collection.buildContainer();
