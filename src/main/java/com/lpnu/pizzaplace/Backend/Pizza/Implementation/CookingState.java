@@ -10,13 +10,15 @@ public class CookingState implements PizzaState {
 
     private final PizzaCreationContext context;
 
+    private static final double cookingFactor = 0.6;
+
     public CookingState(PizzaCreationContext context) {
         this.context = context;
     }
     @Override
     public void doStep() {
         try {
-            Thread.sleep(10000);
+            Thread.sleep((long) (this.context.getPizza().getCookingTime() * cookingFactor));
             context.setPizzaState(new ReadyState(this.context));
             this.context.setReady(true);
             this.context.getMediator().notify(new PizzaReadinessRequest(this.context.getPizza()));

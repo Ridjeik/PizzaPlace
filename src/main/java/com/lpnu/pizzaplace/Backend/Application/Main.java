@@ -13,6 +13,7 @@ import com.lpnu.pizzaplace.Backend.Integration.Implementation.LoggingHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.*;
 import com.lpnu.pizzaplace.Backend.Logging.Implementation.ConsoleLogger;
 import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
+import com.lpnu.pizzaplace.Backend.Orders.Implementation.DefaultOrderFactory;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.EquallyTimedOrderSupplier;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.OneOrderSupplier;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.TestOrderFactory;
@@ -26,8 +27,10 @@ import com.lpnu.pizzaplace.Backend.PIzzeria.PayDeskCollection;
 import com.lpnu.pizzaplace.Backend.PIzzeria.Pizzeria;
 import com.lpnu.pizzaplace.Backend.Pizza.Implementation.DefaultPizzaCreationContextFactory;
 import com.lpnu.pizzaplace.Backend.Pizza.Implementation.DefaultPizzaFactory;
+import com.lpnu.pizzaplace.Backend.Pizza.Implementation.DefaultPizzaMenu;
 import com.lpnu.pizzaplace.Backend.Pizza.Interfaces.PizzaCreationContextFactory;
 import com.lpnu.pizzaplace.Backend.Pizza.Interfaces.PizzaFactory;
+import com.lpnu.pizzaplace.Backend.Pizza.Interfaces.PizzaMenu;
 import com.lpnu.pizzaplace.DI.ServiceCollection;
 import com.lpnu.pizzaplace.GUI.ConfigForm;
 import com.lpnu.pizzaplace.GUI.SimulationWindow;
@@ -44,13 +47,14 @@ public class Main {
         collection.registerSingleton(Kitchen.class);
         collection.registerSingleton(PayDeskCollection.class);
         collection.registerSingleton(OrderGenerationObserver.class, Pizzeria.class);
-        collection.registerSingleton(OrderSupplier.class, EquallyTimedOrderSupplier.class);
-        collection.registerSingleton(OrderFactory.class, TestOrderFactory.class);
+
+        collection.registerSingleton(OrderSupplier.class, OneOrderSupplier.class);
+        collection.registerSingleton(OrderFactory.class, DefaultOrderFactory.class);
         collection.registerSingleton(Logger.class, ConsoleLogger.class);
         collection.registerSingleton(CustomerFactory.class, DefaultCustomerFactory.class);
         collection.registerSingleton(PayDeskChoosingStrategyFactory.class, DefaultPayDeskChoosingStrategyFactory.class);
-        collection.registerSingleton(CookFactory.class, ExtendedCookFactory.class);
-
+        collection.registerSingleton(com.lpnu.pizzaplace.Backend.PIzzeria.Interfaces.CookFactory.class, CookFactory.class);
+        collection.registerSingleton(PizzaMenu.class, DefaultPizzaMenu.class);
         // Mediator registrations
         collection.registerSingleton(SimulationWindow.class);
         collection.registerSingleton(Mediator.class, InterMediator.class);
