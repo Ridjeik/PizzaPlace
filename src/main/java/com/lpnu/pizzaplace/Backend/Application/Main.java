@@ -1,6 +1,5 @@
 package com.lpnu.pizzaplace.Backend.Application;
 
-import com.lpnu.pizzaplace.Backend.Configuration.Implementation.BaseConfigFactory;
 import com.lpnu.pizzaplace.Backend.Configuration.Implementation.StaticConfigSupplier;
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigFactory;
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
@@ -15,14 +14,13 @@ import com.lpnu.pizzaplace.Backend.Integration.Interfaces.Mediator;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.NewOrderRequestHandler;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.PizzaReadinessRequestHandler;
 import com.lpnu.pizzaplace.Backend.Logging.Implementation.ConsoleLogger;
-import com.lpnu.pizzaplace.Backend.Logging.Implementation.FileLogger;
 import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
-import com.lpnu.pizzaplace.Backend.Orders.Implementation.EquallyTimedOrderSupplier;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.OneOrderSupplier;
 import com.lpnu.pizzaplace.Backend.Orders.Implementation.TestOrderFactory;
 import com.lpnu.pizzaplace.Backend.Orders.Interfaces.OrderFactory;
 import com.lpnu.pizzaplace.Backend.Orders.Interfaces.OrderGenerationObserver;
 import com.lpnu.pizzaplace.Backend.Orders.Interfaces.OrderSupplier;
+import com.lpnu.pizzaplace.Backend.PIzzeria.Implementation.CookFactory;
 import com.lpnu.pizzaplace.Backend.PIzzeria.Kitchen;
 import com.lpnu.pizzaplace.Backend.PIzzeria.PayDeskCollection;
 import com.lpnu.pizzaplace.Backend.PIzzeria.Pizzeria;
@@ -48,6 +46,7 @@ public class Main {
         collection.registerSingleton(Logger.class, ConsoleLogger.class);
         collection.registerSingleton(CustomerFactory.class, DefaultCustomerFactory.class);
         collection.registerSingleton(PayDeskChoosingStrategyFactory.class, DefaultPayDeskChoosingStrategyFactory.class);
+        collection.registerSingleton(com.lpnu.pizzaplace.Backend.PIzzeria.Interfaces.CookFactory.class, CookFactory.class);
 
         // Mediator registrations
         collection.registerSingleton(Mediator.class, InterMediator.class);
