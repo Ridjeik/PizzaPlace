@@ -4,9 +4,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -146,6 +144,7 @@ public class ConfigForm extends JFrame implements ConfigFactory {
             @Override
             public void mouseClicked(MouseEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setCurrentDirectory(new File("src/main/resources/PizzeriaConfigInputFiles"));
                 FileNameExtensionFilter jsonFileFilter = new FileNameExtensionFilter(
                         "Only .json files", "json");
 
@@ -198,7 +197,6 @@ public class ConfigForm extends JFrame implements ConfigFactory {
             throw new RuntimeException(e);
         }
 
-        this.setVisible(false);
 
         if (manualSettingsRadioButton.isSelected()) {
             return getPizzeriaConfigFromForm();
@@ -207,6 +205,8 @@ public class ConfigForm extends JFrame implements ConfigFactory {
         } catch (FileNotFoundException ex) {
             log.critical(ex.getMessage());
         }
+
+        this.setVisible(false);
 
         return null;
     }
@@ -249,6 +249,42 @@ public class ConfigForm extends JFrame implements ConfigFactory {
                     .setBakingCooksCount((Integer) bakingCooksSpinner.getValue());
         }
 
-        return baseBuilder.createPizzeriaConfig();
+        PizzeriaConfig config = baseBuilder.createPizzeriaConfig();
+
+        int confirm = JOptionPane.showOptionDialog(
+                this,
+                "Would You Like to Save Before Quitting?",
+                "Exit Confirmation",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null, null, null);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File("src/main/resources/PizzeriaConfigInputFiles"));
+            FileNameExtensionFilter jsonFileFilter = new FileNameExtensionFilter(
+                    "Only .json files", "json");
+
+            fileChooser.setFileFilter(jsonFileFilter);
+            fileChooser.setSelectedFile(new File(".json"));
+
+            Gson gson = new Gson();
+
+            String configJsonString = gson.toJson(config);
+
+            int userSelection = fileChooser.showSaveDialog(null);
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+
+                try (FileWriter writer = new FileWriter(fileToSave)) {
+                    writer.write(configJsonString);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return config;
     }
 }

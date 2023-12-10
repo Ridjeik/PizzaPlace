@@ -1,35 +1,40 @@
 package com.lpnu.pizzaplace.Backend.Integration.Implementation;
 
-import com.lpnu.pizzaplace.Backend.Integration.Contracts.NewCustomerRequest;
-import com.lpnu.pizzaplace.Backend.Integration.Contracts.PizzaReadinessRequest;
-import com.lpnu.pizzaplace.Backend.Integration.Interfaces.ChangePizzaStateRequestHandler;
-import com.lpnu.pizzaplace.Backend.Integration.Interfaces.Mediator;
-import com.lpnu.pizzaplace.Backend.Integration.Contracts.ChangeStateRequest;
-import com.lpnu.pizzaplace.Backend.Integration.Interfaces.NewCustomerRequestHandler;
-import com.lpnu.pizzaplace.Backend.Integration.Interfaces.PizzaReadinessRequestHandler;
+import com.lpnu.pizzaplace.Backend.Integration.Contracts.*;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.*;
 
 public class InterMediator implements Mediator {
 
     private final ChangePizzaStateRequestHandler changeStateRequestHandler;
 
-    private final NewCustomerRequestHandler newOrderRequestHandler;
+    private final NewCustomerRequestHandler newCustomerRequestHandler;
 
     private final PizzaReadinessRequestHandler pizzaReadinessRequestHandler;
 
-    public InterMediator(ChangePizzaStateRequestHandler changeStateRequestHandler, NewCustomerRequestHandler newOrderRequestHandler, PizzaReadinessRequestHandler pizzaReadinessRequestHandler) {
+    private final PizzaOrderedRequestHandler pizzaOrderedRequestHandler;
+
+    private final PizzeriaInitializeRequestHandler pizzeriaInitializeRequestHandler;
+
+    public InterMediator(ChangePizzaStateRequestHandler changeStateRequestHandler, NewCustomerRequestHandler newOrderRequestHandler, PizzaReadinessRequestHandler pizzaReadinessRequestHandler, PizzaOrderedRequestHandler pizzaOrderedRequestHandler, PizzeriaInitializeRequestHandler pizzeriaInitializeRequestHandler) {
         this.changeStateRequestHandler = changeStateRequestHandler;
-        this.newOrderRequestHandler = newOrderRequestHandler;
+        this.newCustomerRequestHandler = newOrderRequestHandler;
         this.pizzaReadinessRequestHandler = pizzaReadinessRequestHandler;
+        this.pizzaOrderedRequestHandler = pizzaOrderedRequestHandler;
+        this.pizzeriaInitializeRequestHandler = pizzeriaInitializeRequestHandler;
     }
 
     @Override
     public void notify(Object request) {
-        switch (request) {
-            case ChangeStateRequest changeStateRequest -> changeStateRequestHandler.handle(changeStateRequest);
-            case NewCustomerRequest newOrderRequest -> newOrderRequestHandler.handle(newOrderRequest);
-            case PizzaReadinessRequest pizzaReadinessRequest -> pizzaReadinessRequestHandler.handle(pizzaReadinessRequest);
-            case null, default -> {
-            }
+        if (request instanceof ChangeStateRequest) {
+            changeStateRequestHandler.handle((ChangeStateRequest) request);
+        } else if (request instanceof NewCustomerRequest) {
+            newCustomerRequestHandler.handle((NewCustomerRequest) request);
+        } else if (request instanceof PizzaReadinessRequest) {
+            pizzaReadinessRequestHandler.handle((PizzaReadinessRequest) request);
+        } else if (request instanceof PizzaOrderedRequest) {
+            pizzaOrderedRequestHandler.handle((PizzaOrderedRequest) request);
+        } else if (request instanceof PizzeriaInitializeRequest) {
+            pizzeriaInitializeRequestHandler.handle((PizzeriaInitializeRequest) request);
         }
     }
 }

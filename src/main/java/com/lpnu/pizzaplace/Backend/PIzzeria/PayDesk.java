@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class PayDesk {
+
     Queue<Customer> customers = new LinkedList<>();
 
     public void addCustomer(Customer customer)
@@ -16,6 +17,10 @@ public class PayDesk {
     public int getCustomersCount()
     {
         return customers.size();
+    }
+
+    public Queue<Customer> getCustomers() {
+        return customers;
     }
 
     public void deleteCustomer(Customer customer)
