@@ -1,12 +1,12 @@
-package com.lpnu.pizzaplace.Backend.PIzzeria.Implementation;
+package com.lpnu.pizzaplace.Backend.Pizzeria.Implementation;
 
-import com.lpnu.pizzaplace.Backend.PIzzeria.Cook;
+import com.lpnu.pizzaplace.Backend.Pizzeria.Cook;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaStateEnum;
 
 import java.util.EnumSet;
 import java.util.Random;
 
-public class ExtendedCookFactory implements com.lpnu.pizzaplace.Backend.PIzzeria.Interfaces.CookFactory {
+public class ExtendedCookFactory implements com.lpnu.pizzaplace.Backend.Pizzeria.Interfaces.CookFactory {
 
     @Override
     public Cook createCook(PizzaStateEnum pizzaStateEnum) {

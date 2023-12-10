@@ -1,8 +1,7 @@
 package com.lpnu.pizzaplace.Backend.Integration.Contracts;
 
-import com.lpnu.pizzaplace.Backend.PIzzeria.Cook;
-import com.lpnu.pizzaplace.Backend.PIzzeria.PayDesk;
-import com.lpnu.pizzaplace.Backend.PIzzeria.PayDeskCollection;
+import com.lpnu.pizzaplace.Backend.Pizzeria.Cook;
+import com.lpnu.pizzaplace.Backend.Pizzeria.PayDeskCollection;
 
 import java.util.List;
 

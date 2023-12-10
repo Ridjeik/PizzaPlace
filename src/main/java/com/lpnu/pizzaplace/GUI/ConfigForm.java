@@ -96,7 +96,7 @@ public class ConfigForm extends JFrame implements ConfigFactory {
     private void initializeNumberModels() {
         payDeskCountSpinner.setModel(new SpinnerNumberModel(1, 1, 10, 1));
 
-        cookCountSpinner.setModel(new SpinnerNumberModel(1, 1, 20, 1));
+        cookCountSpinner.setModel(new SpinnerNumberModel(1, 1, 10, 1));
 
         differentPizzasCountSpinner.setModel(new SpinnerNumberModel(1, 1, 30, 1));
 

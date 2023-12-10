@@ -1,4 +1,4 @@
-package com.lpnu.pizzaplace.Backend.PIzzeria;
+package com.lpnu.pizzaplace.Backend.Pizzeria;
 
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaCreationContext;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaStateEnum;
@@ -50,7 +50,7 @@ public class Cook {
     }
 
     public boolean canProcess(PizzaCreationContext context) {
-        return this.availableStates.contains(context.getPizzaState().asEnum()) && !isStopped;
+        return this.availableStates.contains(context.getPizzaState().asEnum()) && !isStopped && !(context.getPizzaState() instanceof ReadyState);
     }
 
 

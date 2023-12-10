@@ -1,8 +1,8 @@
 package com.lpnu.pizzaplace.Backend.Customers.Contracts;
 
 import com.lpnu.pizzaplace.Backend.Customers.Interfaces.PayDeskChoosingStrategy;
-import com.lpnu.pizzaplace.Backend.PIzzeria.PayDesk;
-import com.lpnu.pizzaplace.Backend.PIzzeria.PayDeskCollection;
+import com.lpnu.pizzaplace.Backend.Pizzeria.PayDesk;
+import com.lpnu.pizzaplace.Backend.Pizzeria.PayDeskCollection;
 
 public class Customer {
     private final String name;

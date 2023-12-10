@@ -15,12 +15,21 @@ public class InterMediator implements Mediator {
 
     private final PizzeriaInitializeRequestHandler pizzeriaInitializeRequestHandler;
 
-    public InterMediator(ChangePizzaStateRequestHandler changeStateRequestHandler, NewCustomerRequestHandler newOrderRequestHandler, PizzaReadinessRequestHandler pizzaReadinessRequestHandler, PizzaOrderedRequestHandler pizzaOrderedRequestHandler, PizzeriaInitializeRequestHandler pizzeriaInitializeRequestHandler) {
+    private final CookAcquiredPizzaRequestHandler cookAcquiredPizzaRequestHandler;
+
+    public InterMediator(ChangePizzaStateRequestHandler changeStateRequestHandler,
+                         NewCustomerRequestHandler newOrderRequestHandler,
+                         PizzaReadinessRequestHandler pizzaReadinessRequestHandler,
+                         PizzaOrderedRequestHandler pizzaOrderedRequestHandler,
+                         PizzeriaInitializeRequestHandler pizzeriaInitializeRequestHandler,
+                         CookAcquiredPizzaRequestHandler cookAcquiredPizzaRequestHandler) {
+
         this.changeStateRequestHandler = changeStateRequestHandler;
         this.newCustomerRequestHandler = newOrderRequestHandler;
         this.pizzaReadinessRequestHandler = pizzaReadinessRequestHandler;
         this.pizzaOrderedRequestHandler = pizzaOrderedRequestHandler;
         this.pizzeriaInitializeRequestHandler = pizzeriaInitializeRequestHandler;
+        this.cookAcquiredPizzaRequestHandler = cookAcquiredPizzaRequestHandler;
     }
 
     @Override
@@ -35,6 +44,8 @@ public class InterMediator implements Mediator {
             pizzaOrderedRequestHandler.handle((PizzaOrderedRequest) request);
         } else if (request instanceof PizzeriaInitializeRequest) {
             pizzeriaInitializeRequestHandler.handle((PizzeriaInitializeRequest) request);
+        } else if (request instanceof CookAcquiredPizzaRequest) {
+            cookAcquiredPizzaRequestHandler.handle((CookAcquiredPizzaRequest) request);
         }
     }
 }

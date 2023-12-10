@@ -4,9 +4,10 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
 import com.lpnu.pizzaplace.Backend.Integration.Contracts.*;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.*;
-import com.lpnu.pizzaplace.Backend.PIzzeria.Cook;
-import com.lpnu.pizzaplace.Backend.PIzzeria.PayDesk;
-import com.lpnu.pizzaplace.Backend.PIzzeria.PayDeskCollection;
+import com.lpnu.pizzaplace.Backend.Logging.Interfaces.Logger;
+import com.lpnu.pizzaplace.Backend.Pizzeria.Cook;
+import com.lpnu.pizzaplace.Backend.Pizzeria.PayDesk;
+import com.lpnu.pizzaplace.Backend.Pizzeria.PayDeskCollection;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaCreationContext;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaStateEnum;
 
@@ -61,9 +62,11 @@ public class SimulationWindow extends JFrame
 
     private final List<PizzaCreationContext> pizzaCreationContextList;
 
+
+
     //private final Mediator mediator;
 
-    public SimulationWindow(ConfigSupplier configSupplier) {
+    public SimulationWindow(ConfigSupplier configSupplier, Logger logger) {
         payDesksCount = configSupplier.getConfig().getPayDesksCount();
         ordersTableData = new ArrayList<>();
         cookTableData = new ArrayList<>();
@@ -74,9 +77,14 @@ public class SimulationWindow extends JFrame
     }
 
     public void showWindow() {
-        initializeStyling();
         initializeTableModels();
+        initializeStyling();
         initializeCustomersQueue();
+
+        initializeKitchen(standingPanel, "src/main/resources/Images/cook_standing.png", 0);
+        initializeKitchen(makingDoughPanel, "src/main/resources/Images/making_dough.png", 0);
+        initializeKitchen(addingToppingPanel, "src/main/resources/Images/topping.png", 0);
+        initializeKitchen(bakingPanel, "src/main/resources/Images/baking.png", 0);
 
         setContentPane(mainGrid);
 
@@ -135,17 +143,14 @@ public class SimulationWindow extends JFrame
 
             DefaultTableModel cooksTableModel = (DefaultTableModel) cooksTable.getModel();
             cooksTableModel.setDataVector(null, cooksTableColumnNames);
-
-            TableColumnModel cookTableColumnModel = cooksTable.getColumnModel();
-            cookTableColumnModel.getColumn(3).setCellRenderer(new ButtonRenderer());
-
-            cookTableColumnModel.getColumn(3).setCellEditor(new ButtonEditor());
+            cooksTable.updateUI();
 
 
-            ordersTable.updateUI();
         });
 
-
+        cooksTable.revalidate();
+        cooksTable.repaint();
+        cooksTable.updateUI();
     }
 
     private void initializeStyling() {
@@ -227,7 +232,6 @@ public class SimulationWindow extends JFrame
 
     @Override
     public void handle(ChangeStateRequest request) {
-
         EventQueue.invokeLater(() -> {
             String[] ordersTableColumnNames = {"Ім'я клієнта", "Назва піци", "Стадія приготування"};
 
@@ -255,10 +259,13 @@ public class SimulationWindow extends JFrame
     }
 
     private void changeCooksStateOrPizza() {
-        cookTableData.clear();
-
         EventQueue.invokeLater(() -> {
+
+
             String[] cooksTableColumnNames = {"Ім'я кухара", "Спеціалізація", "Готує", "Зупинити кухара"};
+
+
+            cookTableData.clear();
 
             cooksList.forEach((cook) -> {
                 cookTableData.add(new String[]{cook.getName(),
@@ -276,6 +283,7 @@ public class SimulationWindow extends JFrame
             cooksTableModel.setDataVector(array, cooksTableColumnNames);
 
             TableColumnModel cookTableColumnModel = cooksTable.getColumnModel();
+
             cookTableColumnModel.getColumn(3).setCellRenderer(new ButtonRenderer());
 
             cookTableColumnModel.getColumn(3).setCellEditor(new ButtonEditor());
@@ -290,7 +298,23 @@ public class SimulationWindow extends JFrame
             int bakingCount = (int) cooksList.stream().filter(cook -> cook.getCurrentContext() != null)
                     .filter(cook -> cook.getCurrentContext().getPizzaState().asEnum() == PizzaStateEnum.Cooking).count();
 
-            standingPanel.removeAll();
+            for (int i = 0; i < 10; i++) {
+                ((ImagePanel)standingPanel.getComponent(i)).setShouldPaint(false);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                ((ImagePanel)makingDoughPanel.getComponent(i)).setShouldPaint(false);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                ((ImagePanel)addingToppingPanel.getComponent(i)).setShouldPaint(false);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                ((ImagePanel)bakingPanel.getComponent(i)).setShouldPaint(false);
+            }
+
+            /*standingPanel.removeAll();
             standingPanel.revalidate();
             standingPanel.repaint();
             makingDoughPanel.removeAll();
@@ -301,14 +325,32 @@ public class SimulationWindow extends JFrame
             addingToppingPanel.repaint();
             bakingPanel.removeAll();
             bakingPanel.revalidate();
-            bakingPanel.repaint();
+            bakingPanel.repaint();*/
 
-            initializeKitchen(standingPanel, "src/main/resources/Images/cook_standing.png", standingCount);
-            initializeKitchen(makingDoughPanel, "src/main/resources/Images/making_dough.png", makingDoughCount);
-            initializeKitchen(addingToppingPanel, "src/main/resources/Images/topping.png", addingToppingCount);
-            initializeKitchen(bakingPanel, "src/main/resources/Images/baking.png", bakingCount);
+            for (int i = 0; i < standingCount; i++) {
+                ((ImagePanel)standingPanel.getComponent(i)).setShouldPaint(true);
+            }
+
+            for (int i = 0; i < makingDoughCount; i++) {
+                ((ImagePanel)makingDoughPanel.getComponent(i)).setShouldPaint(true);
+            }
+
+            for (int i = 0; i < addingToppingCount; i++) {
+                ((ImagePanel)addingToppingPanel.getComponent(i)).setShouldPaint(true);
+            }
+
+            for (int i = 0; i < bakingCount; i++) {
+                ((ImagePanel)bakingPanel.getComponent(i)).setShouldPaint(true);
+            }
+
+            kitchenPanel.revalidate();
+            kitchenPanel.repaint();
         });
 
+        /*
+
+        cooksTable.revalidate();
+        cooksTable.repaint();*/
         cooksTable.updateUI();
     }
 
@@ -317,6 +359,7 @@ public class SimulationWindow extends JFrame
         ((ImagePanel) queuePanel.
                 getComponent((payDeskIntegerMap.get(request.getPayDesk()) - 1) * 10 + request.getPayDesk().getCustomersCount())).
                 setShouldPaint(true);
+
 
         queuePanel.repaint();
     }

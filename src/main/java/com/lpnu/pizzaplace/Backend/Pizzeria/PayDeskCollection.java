@@ -1,4 +1,4 @@
-package com.lpnu.pizzaplace.Backend.PIzzeria;
+package com.lpnu.pizzaplace.Backend.Pizzeria;
 
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
 

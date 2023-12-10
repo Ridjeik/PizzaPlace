@@ -1,6 +1,6 @@
-package com.lpnu.pizzaplace.Backend.PIzzeria.Interfaces;
+package com.lpnu.pizzaplace.Backend.Pizzeria.Interfaces;
 
-import com.lpnu.pizzaplace.Backend.PIzzeria.Cook;
+import com.lpnu.pizzaplace.Backend.Pizzeria.Cook;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaStateEnum;
 
 public interface CookFactory {
