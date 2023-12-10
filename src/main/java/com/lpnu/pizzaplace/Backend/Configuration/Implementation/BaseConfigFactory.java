@@ -8,10 +8,28 @@ public class BaseConfigFactory implements ConfigFactory {
     public PizzeriaConfig createConfig() {
         return PizzeriaConfig
                 .createBuilder()
-                .setCooksCount(3)
-                .setPayDesksCount(3)
+                .setCooksCount(9)
+                .setPayDesksCount(1)
+                .setCookDoingAllOperations(false)
+                .setBakingCooksCount(3)
+                .setMakingDoughCooksCount(3)
+                .setAddingToppingCooksCount(3)
+                .setMinimalTimeToCookPizza(2000)
                 .setPizzaTypesCount(1)
-                .setOrderGenerationInterval(2000)
+                .setOrderGenerationInterval(5000)
                 .createPizzeriaConfig();
+
+        /*.createBuilder()
+                .setCooksCount(9)
+                .setPayDesksCount(1)
+                .setCookDoingAllOperations(false)
+                .setBakingCooksCount(3)
+                .setMakingDoughCooksCount(3)
+                .setAddingToppingCooksCount(3)
+                .setMinimalTimeToCookPizza(2000)
+                .setPizzaTypesCount(1)
+                .setOrderGenerationInterval(5000)
+                .createPizzeriaConfig();=
+        * */
     }
 }

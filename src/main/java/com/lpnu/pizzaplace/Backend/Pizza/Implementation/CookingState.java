@@ -20,6 +20,7 @@ public class CookingState implements PizzaState {
         try {
             Thread.sleep((long) (this.context.getPizza().getCookingTime() * cookingFactor));
             context.setPizzaState(new ReadyState(this.context));
+            this.context.setReady(true);
             this.context.getMediator().notify(new PizzaReadinessRequest(this.context.getPizza()));
         } catch (InterruptedException ignored) {
 

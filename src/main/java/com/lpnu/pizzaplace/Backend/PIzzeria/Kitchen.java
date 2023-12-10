@@ -1,8 +1,13 @@
 package com.lpnu.pizzaplace.Backend.PIzzeria;
 
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
+import com.lpnu.pizzaplace.Backend.Integration.Contracts.CookAcquiredPizzaRequest;
 import com.lpnu.pizzaplace.Backend.Integration.Contracts.PizzaOrderedRequest;
+import com.lpnu.pizzaplace.Backend.Integration.Contracts.ResumeCookRequest;
+import com.lpnu.pizzaplace.Backend.Integration.Contracts.StopCookRequest;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.Mediator;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.ResumeCookRequestHandler;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.StopCookRequestHandler;
 import com.lpnu.pizzaplace.Backend.Orders.Contracts.Order;
 import com.lpnu.pizzaplace.Backend.PIzzeria.Interfaces.CookFactory;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaCreationContext;
@@ -19,6 +24,7 @@ public final class Kitchen
 {
     private final List<Cook> cooks;
     private final PizzaCreationContextFactory pizzaCreationContextFactory;
+
     private final Mediator mediator;
 
     private List<PizzaCreationContext> waitingPizzas = new LinkedList<>();
@@ -48,6 +54,7 @@ public final class Kitchen
 
         }
 
+        this.mediator = mediator;
         this.pizzaCreationContextFactory = pizzaFactory;
         new Thread(this::reviewPizzas).start();
     }
@@ -74,6 +81,7 @@ public final class Kitchen
                     if (!waitingPizza.isBeingCooked() && cook.isFree() && cook.canProcess(waitingPizza))
                     {
                         cook.processPizza(waitingPizza);
+                        this.mediator.notify(new CookAcquiredPizzaRequest(cook));
                         break;
                     }
                 }
