@@ -1,6 +1,8 @@
 package com.lpnu.pizzaplace.Backend.PIzzeria;
 
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
+import com.lpnu.pizzaplace.Backend.Integration.Contracts.PizzaOrderedRequest;
+import com.lpnu.pizzaplace.Backend.Integration.Interfaces.Mediator;
 import com.lpnu.pizzaplace.Backend.Orders.Contracts.Order;
 import com.lpnu.pizzaplace.Backend.PIzzeria.Interfaces.CookFactory;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaCreationContext;
@@ -17,11 +19,11 @@ public final class Kitchen
 {
     private final List<Cook> cooks;
     private final PizzaCreationContextFactory pizzaCreationContextFactory;
+    private final Mediator mediator;
 
     private List<PizzaCreationContext> waitingPizzas = new LinkedList<>();
 
     private List<PizzaCreationContext> readyPizzas = new LinkedList<>();
-
     public Kitchen(ConfigSupplier configSupplier, PizzaCreationContextFactory pizzaFactory, CookFactory cookFactory) {
         if(configSupplier.getConfig().isCookDoingAllOperations()){
             this.cooks = IntStream
@@ -52,6 +54,7 @@ public final class Kitchen
     public void processOrder(Order order)
     {
         var newContexts = pizzaCreationContextFactory.createPizzaContexts(order);
+        newContexts.forEach(context -> this.mediator.notify(new PizzaOrderedRequest(context)));
         waitingPizzas.addAll(newContexts);
     }
 
@@ -83,4 +86,7 @@ public final class Kitchen
         }
     }
 
+    public List<Cook> getCooks() {
+        return List.copyOf(cooks);
+    }
 }
