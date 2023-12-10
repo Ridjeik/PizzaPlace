@@ -24,7 +24,8 @@ public final class Kitchen
     private List<PizzaCreationContext> waitingPizzas = new LinkedList<>();
 
     private List<PizzaCreationContext> readyPizzas = new LinkedList<>();
-    public Kitchen(ConfigSupplier configSupplier, PizzaCreationContextFactory pizzaFactory, CookFactory cookFactory) {
+    public Kitchen(ConfigSupplier configSupplier, PizzaCreationContextFactory pizzaFactory, CookFactory cookFactory, Mediator mediator) {
+        this.mediator = mediator;
         if(configSupplier.getConfig().isCookDoingAllOperations()){
             this.cooks = IntStream
                     .range(0, configSupplier.getConfig().getCooksCount())
