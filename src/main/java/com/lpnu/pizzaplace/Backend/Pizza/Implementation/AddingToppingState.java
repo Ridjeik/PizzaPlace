@@ -8,8 +8,7 @@ import com.lpnu.pizzaplace.Backend.Pizza.Interfaces.PizzaState;
 public class AddingToppingState implements PizzaState {
     private final PizzaCreationContext context;
 
-    // Test value
-    private int addintToppingTime = 3000;
+    private static final double addingToppingFactor = 0.2;
 
     public AddingToppingState(PizzaCreationContext context) {
         this.context = context;
@@ -17,7 +16,7 @@ public class AddingToppingState implements PizzaState {
     @Override
     public void doStep() {
         try {
-            Thread.sleep(addintToppingTime);
+            Thread.sleep((long) (this.context.getPizza().getCookingTime() * addingToppingFactor));
             context.setPizzaState(new CookingState(this.context));
             this.context.getMediator().notify(new ChangeStateRequest(this.context.getPizza(), this.context.getPizzaState().asEnum()));
         } catch (InterruptedException ignored) {
