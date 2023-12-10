@@ -2,13 +2,13 @@ package com.lpnu.pizzaplace.GUI;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.lpnu.pizzaplace.Backend.Configuration.Interfaces.ConfigSupplier;
-import com.lpnu.pizzaplace.Backend.Customers.Interfaces.PayDeskChoosingStrategy;
 import com.lpnu.pizzaplace.Backend.Integration.Contracts.*;
 import com.lpnu.pizzaplace.Backend.Integration.Interfaces.*;
 import com.lpnu.pizzaplace.Backend.PIzzeria.Cook;
 import com.lpnu.pizzaplace.Backend.PIzzeria.PayDesk;
 import com.lpnu.pizzaplace.Backend.PIzzeria.PayDeskCollection;
 import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaCreationContext;
+import com.lpnu.pizzaplace.Backend.Pizza.Contracts.PizzaStateEnum;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -27,7 +27,8 @@ public class SimulationWindow extends JFrame
                     PizzeriaInitializeRequestHandler,
                     PizzaOrderedRequestHandler,
                     PizzaReadinessRequestHandler,
-                    ChangePizzaStateRequestHandler {
+                    ChangePizzaStateRequestHandler,
+                    CookAcquiredPizzaRequestHandler{
 
     // UI Components
     private JTable cooksTable;
@@ -40,6 +41,7 @@ public class SimulationWindow extends JFrame
     private JPanel makingDoughPanel;
     private JPanel addingToppingPanel;
     private JPanel bakingPanel;
+    private JPanel standingPanel;
 
     // Styling constants
     private final Color backgroundColor = Color.decode("#C4BBAF");
@@ -59,6 +61,8 @@ public class SimulationWindow extends JFrame
 
     private final List<PizzaCreationContext> pizzaCreationContextList;
 
+    //private final Mediator mediator;
+
     public SimulationWindow(ConfigSupplier configSupplier) {
         payDesksCount = configSupplier.getConfig().getPayDesksCount();
         ordersTableData = new ArrayList<>();
@@ -73,9 +77,6 @@ public class SimulationWindow extends JFrame
         initializeStyling();
         initializeTableModels();
         initializeCustomersQueue();
-        initializeKitchen(makingDoughPanel, "src/main/resources/Images/making_dough.png");
-        initializeKitchen(addingToppingPanel, "src/main/resources/Images/topping.png");
-        initializeKitchen(bakingPanel, "src/main/resources/Images/baking.png");
 
         setContentPane(mainGrid);
 
@@ -85,17 +86,19 @@ public class SimulationWindow extends JFrame
         setVisible(true);
     }
 
-    private void initializeKitchen(JPanel panel, String resourcePath) {
-        panel.setBackground(backgroundColor);
-        panel.setLayout(new GridLayout(10, 1));
-
+    private void initializeKitchen(JPanel panel, String resourcePath, int cooksCount) {
         for (int row = 0; row < 10; row++) {
             ImagePanel cellPane = new ImagePanel(resourcePath, 100, 100);
 
             cellPane.setBackground(backgroundColor);
-            cellPane.setShouldPaint(true);
+
+            if (row < cooksCount) {
+                cellPane.setShouldPaint(true);
+            }
+
             panel.add(cellPane);
         }
+
         panel.repaint();
     }
 
@@ -146,6 +149,18 @@ public class SimulationWindow extends JFrame
     }
 
     private void initializeStyling() {
+        standingPanel.setBackground(backgroundColor);
+        standingPanel.setLayout(new GridLayout(10, 1));
+
+        makingDoughPanel.setBackground(backgroundColor);
+        makingDoughPanel.setLayout(new GridLayout(10, 1));
+
+        addingToppingPanel.setBackground(backgroundColor);
+        addingToppingPanel.setLayout(new GridLayout(10, 1));
+
+        bakingPanel.setBackground(backgroundColor);
+        bakingPanel.setLayout(new GridLayout(10, 1));
+
         mainGrid.setBackground(backgroundColor);
 
         queuePanel.setBackground(backgroundColor);
@@ -212,6 +227,7 @@ public class SimulationWindow extends JFrame
 
     @Override
     public void handle(ChangeStateRequest request) {
+
         EventQueue.invokeLater(() -> {
             String[] ordersTableColumnNames = {"Ім'я клієнта", "Назва піци", "Стадія приготування"};
 
@@ -231,9 +247,69 @@ public class SimulationWindow extends JFrame
             }
 
             ordersTableModel.setDataVector(array, ordersTableColumnNames);
+
+            changeCooksStateOrPizza();
         });
 
         ordersTable.updateUI();
+    }
+
+    private void changeCooksStateOrPizza() {
+        cookTableData.clear();
+
+        EventQueue.invokeLater(() -> {
+            String[] cooksTableColumnNames = {"Ім'я кухара", "Спеціалізація", "Готує", "Зупинити кухара"};
+
+            cooksList.forEach((cook) -> {
+                cookTableData.add(new String[]{cook.getName(),
+                        cook.getSpecialization(),
+                        cook.getCurrentContext() != null ? cook.getCurrentContext().getPizza().getName() : "Нічого"});
+            });
+
+            var cooksTableModel = (DefaultTableModel) cooksTable.getModel();
+
+            String[][] array = new String[cookTableData.size()][];
+            for (int i = 0; i < cookTableData.size(); i++) {
+                array[i] = cookTableData.get(i);
+            }
+
+            cooksTableModel.setDataVector(array, cooksTableColumnNames);
+
+            TableColumnModel cookTableColumnModel = cooksTable.getColumnModel();
+            cookTableColumnModel.getColumn(3).setCellRenderer(new ButtonRenderer());
+
+            cookTableColumnModel.getColumn(3).setCellEditor(new ButtonEditor());
+
+            int standingCount = (int) cooksList.stream().filter(cook -> cook.getCurrentContext() == null).count();
+            int makingDoughCount = (int) cooksList.stream().filter(cook -> cook.getCurrentContext() != null)
+                    .filter(cook -> cook.getCurrentContext().getPizzaState().asEnum() == PizzaStateEnum.MakingDough).count();
+
+            int addingToppingCount = (int) cooksList.stream().filter(cook -> cook.getCurrentContext() != null)
+                    .filter(cook -> cook.getCurrentContext().getPizzaState().asEnum() == PizzaStateEnum.AddingTopping).count();
+
+            int bakingCount = (int) cooksList.stream().filter(cook -> cook.getCurrentContext() != null)
+                    .filter(cook -> cook.getCurrentContext().getPizzaState().asEnum() == PizzaStateEnum.Cooking).count();
+
+            standingPanel.removeAll();
+            standingPanel.revalidate();
+            standingPanel.repaint();
+            makingDoughPanel.removeAll();
+            makingDoughPanel.revalidate();
+            makingDoughPanel.repaint();
+            addingToppingPanel.removeAll();
+            addingToppingPanel.revalidate();
+            addingToppingPanel.repaint();
+            bakingPanel.removeAll();
+            bakingPanel.revalidate();
+            bakingPanel.repaint();
+
+            initializeKitchen(standingPanel, "src/main/resources/Images/cook_standing.png", standingCount);
+            initializeKitchen(makingDoughPanel, "src/main/resources/Images/making_dough.png", makingDoughCount);
+            initializeKitchen(addingToppingPanel, "src/main/resources/Images/topping.png", addingToppingCount);
+            initializeKitchen(bakingPanel, "src/main/resources/Images/baking.png", bakingCount);
+        });
+
+        cooksTable.updateUI();
     }
 
     @Override
@@ -273,26 +349,7 @@ public class SimulationWindow extends JFrame
     public void handle(PizzeriaInitializeRequest request) {
         this.cooksList = request.getCooks();
 
-        EventQueue.invokeLater(() -> {
-            String[] cooksTableColumnNames = {"Ім'я кухара", "Спеціалізація", "Готує", "Зупинити кухара"};
-
-            cooksList.forEach((cook) -> {
-                cookTableData.add(new String[]{cook.toString(),
-                        "Something",
-                        ""});
-            });
-
-            var cooksTableModel = (DefaultTableModel) cooksTable.getModel();
-
-            String[][] array = new String[cookTableData.size()][];
-            for (int i = 0; i < cookTableData.size(); i++) {
-                array[i] = cookTableData.get(i);
-            }
-
-            cooksTableModel.setDataVector(array, cooksTableColumnNames);
-        });
-
-        cooksTable.updateUI();
+        changeCooksStateOrPizza();
 
         this.payDeskCollection = request.getPayDesks();
 
@@ -301,6 +358,11 @@ public class SimulationWindow extends JFrame
             payDeskIntegerMap.put(payDesk, id);
             id++;
         }
+    }
+
+    @Override
+    public void handle(CookAcquiredPizzaRequest cookAcquiredPizzaRequest) {
+        changeCooksStateOrPizza();
     }
 
     private class ImagePanel extends JPanel{
@@ -345,7 +407,7 @@ public class SimulationWindow extends JFrame
     public class ButtonRenderer extends JButton implements TableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setText("Зупинити");
+            setText(cooksList.get(row).isStopped() ? "Відновити" : "Зупинити");
             setForeground(Color.decode("#FFFFFF"));
             setBackground(Color.decode("#928473"));
             return this;
@@ -355,13 +417,16 @@ public class SimulationWindow extends JFrame
     public class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
         protected JButton button;
         private String label;
-        private boolean isPushed;
 
         public ButtonEditor() {
             button = new JButton();
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
+                    if (cooksList.get(cooksTable.rowAtPoint(button.getLocation())).isStopped()) {
+                        cooksList.get(cooksTable.rowAtPoint(button.getLocation())).resume();
+                    } else {
+                        cooksList.get(cooksTable.rowAtPoint(button.getLocation())).stop();
+                    }
                 }
             });
         }
@@ -370,16 +435,11 @@ public class SimulationWindow extends JFrame
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             label = (value == null) ? "" : value.toString();
             button.setText(label);
-            isPushed = true;
             return button;
         }
 
         @Override
         public Object getCellEditorValue() {
-            if (isPushed) {
-                System.out.println("Button pressed!");
-            }
-            isPushed = false;
             return label;
         }
     }

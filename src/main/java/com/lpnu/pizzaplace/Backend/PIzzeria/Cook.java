@@ -8,14 +8,17 @@ import java.util.EnumSet;
 
 public class Cook {
 
+    private final String name;
+
     private PizzaCreationContext currentContext;
+
     private boolean isStopped = false;
-    private EnumSet<PizzaStateEnum> availableStates;
+    private final EnumSet<PizzaStateEnum> availableStates;
 
-    public Cook(EnumSet<PizzaStateEnum> availableStates) {
+    public Cook(EnumSet<PizzaStateEnum> availableStates, String name) {
         this.availableStates = availableStates;
+        this.name = name;
     }
-
 
     public void processPizza(PizzaCreationContext context)
     {
@@ -47,12 +50,30 @@ public class Cook {
     }
 
     public boolean canProcess(PizzaCreationContext context) {
-        return this.availableStates.contains(context.getPizzaState().asEnum());
+        return this.availableStates.contains(context.getPizzaState().asEnum()) && !isStopped;
     }
 
 
     public boolean isFree()
     {
         return this.currentContext == null;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isStopped() {
+        return isStopped;
+    }
+
+    public String getSpecialization() {
+        if (this.availableStates.containsAll(EnumSet.allOf(PizzaStateEnum.class))) {
+            return "Всі";
+        } else {
+            return this.availableStates.contains(PizzaStateEnum.MakingDough) ? "Тісто" :
+                    this.availableStates.contains(PizzaStateEnum.AddingTopping) ? "Начинка" :
+                    "Пекар";
+        }
     }
 }
